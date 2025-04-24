@@ -1,8 +1,3 @@
-/*  Endpoints Disponibles:
-- `GET /usuarios`: Obtiene la lista de todos los usuarios.
-- `POST /usuarios`: Crea un nuevo usuario.
-- `GET /usuarios/:nombre`: Obtiene un usuario por nombre.
-*/
 const express = require('express');
 const app = express();
 const PORT = 3000;
@@ -19,9 +14,27 @@ let usuarios = [                                                     //es la res
 ];
 
 //CREATE
+app.post('/usuarios', (req, res) => {                                   //con el post, creo nuevos usuarios y los agrego a el array usuarios.
+    const { nombre, edad, lugarProcedencia } = req.body;
+    const nuevoUsuario = {
+        id: usuarios.length + 1,
+        nombre,
+        edad,
+        lugarProcedencia,
+    };
+    usuarios.push(nuevoUsuario);
+    res.status(201).json(nuevoUsuario);
+});
+
+//READ
 app.get('/usuarios', (req, res) => {                                      //el get /usuarios, le establezco la ruta a ese array
     //console.log(usuarios);                                                obtengo la lista de usuarios completa, el let usuarios.
     res.json(usuarios);                                                  //res.json(usuarios), ese usuarios es el nombre de la variable array let USUARIOS 
+});
+
+app.get('/usuarios/nombres', (req, res) => {
+    const nombres = usuarios.map(usuario => usuario.nombre);
+    res.json(nombres);
 });
 
 app.get('/usuarios/:nombre', (req, res) => {                          //con el get, busco un usuario por su nombre.
@@ -70,50 +83,49 @@ app.get('/usuarios/lugar/:lugarProcedencia', (req, res) => {
     res.json(usuarioPorLugar);                                                     
 });
 
-app.post('/usuarios', (req, res) => {                                   //con el post, creo nuevos usuarios y los agrego a el array usuarios.
-    const { nombre, edad, lugarProcedencia } = req.body;
-    const nuevoUsuario = {
-        id: usuarios.length + 1,
-        nombre,
-        edad,
-        lugarProcedencia,
-    };
-    usuarios.push(nuevoUsuario);
-    res.status(201).json(nuevoUsuario);
-});
 
+// UPDATE
+app.put('/usuarios/:nombre', (req, res) => {                                 
+    const { nombre } = req.params;                                          //nombre que se le pasa en la url                                                                       
+    const { edad, lugarProcedencia } = req.body;
 
-
-//READ
-/*app.get('/usuarios/:id', (req, res) => {
-    const { id } = req.params;
-    const usuario = usuarios.find((usuario) => usuario.id == id);
-    if (!usuario) {
+    const nombreNormalizado = nombre.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/-/g, '');
+    const usuariosIndex = usuarios.findIndex((usuario) => {
+        const usuarioNormalizado = usuario.nombre.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/-/g, '');
+        return usuarioNormalizado === nombreNormalizado;                     
+    }) 
+    if (usuariosIndex === -1) {
         return res.status(404).json({ error: 'Usuario no encontrado' });
     }
-    res.json(usuario);
-});*/
+    usuarios[usuariosIndex] = {
+        ...usuarios[usuariosIndex],
+        edad, 
+        lugarProcedencia
+    };
 
-/*app.get('/', (req, res) => {
-    res.send(
-      `<h1>Lista de Usuarios</h1>
-      <ul>
-      ${usuarios
-        .map(
-          (usuario) => `<li>ID: ${usuario.id} | NOMBRE: ${usuario.nombre}</li>`
-        )
-        .join('')}
-      </ul>
-      <form action="/usuarios" method="post">
-        <label for"nombre">Nombre</label>
-        <input type="text" id="nombre" name="nombre" required>
-        <button type="submit">Agregar nuevo usuario</button>
-      </form>
-      <a href="/usuarios">Usuarios JSON</a>
-      `
-    );
-  });
-*/
+    res.json(usuarios[usuariosIndex]);
+});
+
+// DELETE
+app.delete('/usuarios/:nombre', (req, res) => {
+    const { nombre } = req.params; 
+    const nombreNormalizado = nombre.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/-/g, '');                                     
+    const usuariosFiltrados = usuarios.filter((usuario) => {
+        const usuarioNormalizado = usuario.nombre.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/-/g, '');
+        return usuarioNormalizado !== nombreNormalizado;                     
+    });
+
+    if (usuariosFiltrados.length === usuarios.length) {
+        return res.status(404).json({ error: 'Usuario no encontrado' });
+    }
+    
+    usuarios = [ ...usuariosFiltrados ]; // Agregar los usuarios filtrados al array
+
+    res.status(200).json({ message: `Usuario ${nombre} eliminado correctamente` });
+})
+
+
 app.listen(PORT, () => {
     console.log('Servidor escuchando en puerto http://localhost:3000');
   });
+ 
