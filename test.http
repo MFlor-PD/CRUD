@@ -4,3 +4,6 @@ GET http://localhost:3000/usuarios
 //separar con 3 ###### para separar las peticiones
 ###
 GET http://localhost:3000/usuarios/
+
+###
+GET http://localhost:3000/usuarios/Ryu
