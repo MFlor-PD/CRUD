@@ -24,6 +24,7 @@ app.post('/usuarios', (req, res) => {                                   //con el
     };
     usuarios.push(nuevoUsuario);
     res.status(201).json(nuevoUsuario);
+    //res.redirect('/usuarios'); // Redirigir a la lista de usuarios después de crear uno nuevo
 });
 
 //READ
