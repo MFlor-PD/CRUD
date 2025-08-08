@@ -13,6 +13,9 @@ let usuarios = [                                                     //es la res
     { id: 5, nombre: 'Blanka', edad: 32, lugarProcedencia: 'Brasil' },
 ];
 
+app.get('/', (req, res) => {
+    res.send('Pagina pricipal')
+})
 //CREATE
 app.post('/usuarios', (req, res) => {                                   //con el post, creo nuevos usuarios y los agrego a el array usuarios.
     const { nombre, edad, lugarProcedencia } = req.body;
